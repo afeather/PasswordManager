@@ -7,9 +7,4 @@ usage: 	java PasswordManager -ADD DESCRIPTION PASSWORD
 		
 # Password File
 The password file is contains the description, salt and encrypted password for each entry.
-
-# Algorithm
-1. Open Password File
-2. Get user input
-3. Do Action
-4. Go to 2
+	
