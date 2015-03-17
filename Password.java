@@ -1,6 +1,7 @@
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
 
 
 public class Password {
@@ -14,9 +15,10 @@ public class Password {
 		encrypt();
 	}
 	
-	public Password(byte[] encrypted, SecretKey secret)  throws Exception {
+	public Password(byte[] encrypted, byte[] secret)  throws Exception {
 		this.encrypted = encrypted;
-		this.secret = secret;
+		this.secret = new SecretKeySpec(secret, 0, secret.length, "AES");
+		
 		decrypt();
 	}
 	
