@@ -1,13 +1,10 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 public class PasswordManager {
 	
@@ -21,10 +18,8 @@ public class PasswordManager {
 	
 	ArrayList<Password> passwords = new ArrayList<Password>();
 	
-	public PasswordManager() throws Exception {
+	public PasswordManager() {
 	
-		BufferedReader reader = new BufferedReader(new FileReader(filename));
-		
 		String line;
 		String[] splitline;
 		
@@ -32,57 +27,77 @@ public class PasswordManager {
 		byte[] secret;
 		Password temp;
 		
-		while ((line = reader.readLine()) != null) {
+		try {
 			
-			splitline = line.split(" ");
-			secret = hexStringToBytes(splitline[0]);
-			encrypted = hexStringToBytes(splitline[1]);
+			BufferedReader reader = new BufferedReader(new FileReader(filename));
 			
-			temp = new Password(encrypted, secret);
+			while ((line = reader.readLine()) != null) {
+				
+				splitline = line.split(" ");
+				secret = stringToBytes(splitline[0]);
+				encrypted = stringToBytes(splitline[1]);
+				
+				temp = new Password(encrypted, secret);
+				
+				passwords.add(temp);
+				
+			}
 			
-			System.out.println(temp.plaintext);
-			passwords.add(temp);
+			reader.close();
 			
+		} catch (IOException e) {
+			System.err.println("COULD NOT READ FROM FILE");
+			System.err.println(e.getMessage());
 		}
 		
-		reader.close();
+		System.out.println(passwords.size() + " passwords found");
+		for (int i=0; i<passwords.size(); i++)
+			System.out.println(passwords.get(i).plaintext);
 		
 	}
 	
-	public void addPassword(String pass) throws Exception {
+	public void addPassword(String pass) {
 		
-		Password p = new Password(pass.getBytes());
+		Password p = new Password(pass);
 		
-		String secret = bytesToHexString(p.secret.getEncoded());
-		String encrypted = bytesToHexString(p.encrypted);
+		String secret = bytesToString(p.secret.getEncoded());
+		String encrypted = bytesToString(p.encrypted);
 		
 		String output = secret + " " + encrypted + "\n";
 		
-		Files.write(Paths.get(filename), output.getBytes(), StandardOpenOption.APPEND);
-		System.out.println(output);
+		try {
+			Files.write(Paths.get(filename), output.getBytes(), StandardOpenOption.APPEND);
+		} catch (IOException e) {
+			System.err.println("COULD NOT WRITE TO FILE");
+			System.err.println(e.getMessage());
+		}
 		
 	}
 	
-	public static final String bytesToHexString(byte[] b) {
+	public static final String bytesToString(byte[] b) {
 		
+		if (b == null) return "";
+
 		String s = "";
 		String temp;
-		for (int i = 0; i < b.length; i++) {
-			temp = "00" + Integer.toHexString(b[i] & 0xFF).toUpperCase();
+		
+		for (int i=0; i<b.length; i++) {
+			temp = "00" + Integer.toHexString(b[i] & 0xFF);
 			s = s + temp.substring(temp.length() - 2);
 		}
+		
 		return s;
-	
+		
 	}
 	
-	public static final byte[] hexStringToBytes(String s) {
+	public static final byte[] stringToBytes(String s) {
 		
 		byte[] b = new byte[s.length()/2];
-		String temp;
-		for (int i = 0; i < s.length(); i+=2) {
-			temp = s.substring(i, i+2);
-			b[i/2] = (byte) (Integer.parseInt(temp, 16) & 0xFF);
+		
+		for (int i=0; i<s.length(); i+=2) {
+			b[i/2] = (byte) (Integer.parseInt(s.substring(i, i+2), 16) & 0xFF);
 		}
+		
 		return b;
 		
 	}
