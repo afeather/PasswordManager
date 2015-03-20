@@ -10,16 +10,26 @@ java PasswordManager -UPDATE ENTRYID NEWPASSWORD
 The password file is contains the description, salt and encrypted password for each entry.
 
 # Algorithm
+
 01. get MasterPassword
-02. decrypt PasswordFile with MasterPassword
-03. read Passwords from PasswordFile
+02. PlaintextPasswordFile = decrypt(MasterPassword, EncryptedPasswordFile)
+03. for each line in PlaintextPasswordFile: get PasswordSalt, PasswordEncrypted, PasswordDescription
 04. get UserAction
-05. if UserAction = "add"
-06. 	get Description, Password
-07. 	create Password object
-08. 	save Password object
-09. if UserAction = "get"
-10. 	get SearchString
-11. 	find Password with SearchString in Description
-12. 	print Password
-13. go to step 04
+05. if UserAction = "add":
+06.     get Description, PasswordPlaintext
+07.     generate PasswordSalt
+08.     PasswordEncrypted = encrypt(PasswordSalt + MasterPassword, PasswordPlaintext)
+09.     write PasswordSalt, PasswordEncrypted, PasswordDescription to PlaintextPasswordFile
+10.     EncryptedPasswordFile = encrypt(MasterPassword, PlaintextPasswordFile)
+11.     save EncryptedPasswordFile
+12. if UserAction = "get":
+13.     get SearchString
+14.     SearchResult = find PasswordDescription that contains SearchString
+15.     print PlaintextPassword, PasswordDescription
+16. if UserAction = "delete":
+17. 	get SearchString
+18. 	SearchResult = find PasswordDescription that contains SearchString
+19. 	delete line from PlaintextPasswordFile
+20. 	EncryptedPasswordFile = encrypt(MasterPassword, PlaintextPasswordFile)
+21. 	save EncryptedPasswordFile
+22. go to step 04
